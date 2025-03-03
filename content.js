@@ -85,6 +85,16 @@ function updateMessages() {
             (span) =>
               span.parentElement?.parentElement?.parentElement?.parentElement
           )
+    },
+
+    // Case 7: (Github Copilot)  <div class="UserMessage-module__container--cAvvK ChatMessage-module__userMessage--xvIFp">CONTENT</div>
+    {
+      find: () =>
+        Array.from(
+          document.querySelectorAll(
+            'div[class*="UserMessage-module__container"]'
+          )
+        ).map((div) => div.parentElement.parentElement)
     }
   ];
 
