@@ -1,6 +1,7 @@
 {
 	"manifest_version": 3,
 	"name": "Chat Navigator",
+	"author": "NTKhang",
 	"version": "1.0",
 	"description": "Navigate between your chat messages easily",
 	"permissions": [
