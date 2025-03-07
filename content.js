@@ -40,6 +40,11 @@ function updateMessages() {
         Array.from(document.querySelectorAll("h5.sr-only"))
           .filter((h5) => h5.textContent.trim() === "You said:")
           .map((h5) => h5.parentElement)
+          .map(
+            (div) =>
+              div.children[1].firstChild?.firstChild?.firstChild?.firstChild
+                ?.firstChild?.firstChild?.firstChild || div
+          )
     },
 
     // Case 2: (Google AI Studio) Tin nhắn với class="user-prompt-container" data-turn-role="User"
@@ -95,6 +100,44 @@ function updateMessages() {
             'div[class*="UserMessage-module__container"]'
           )
         ).map((div) => div.parentElement.parentElement)
+    },
+
+    // Case 8: (Google Notebook)  < class="from-user-message-card-content">CONTENT</>
+    {
+      find: () =>
+        Array.from(
+          document.querySelectorAll('[class*="from-user-message-card-content"]')
+        )
+    },
+
+    // Case 9: (Perplexity) class="change-auto"
+    {
+      find: () =>
+        Array.from(document.querySelectorAll(".will-change-auto")).map(
+          (div) => div.firstChild
+        )
+    },
+
+    // Case 10: (DeepSeek)
+    // First: find element: //*[@id="root"]/div/div[2]/div[2]/div/div[2]/div/div/div[1]/div[1]/div
+    {
+      find: () => {
+        const firstMyChat = document.querySelector(
+          'div[id="root"] > div > div:nth-child(2) > div:nth-child(2) > div > div:nth-child(2) > div > div > div:nth-child(1) > div:nth-child(1) > div'
+        );
+
+        if (!firstMyChat) {
+          return [];
+        }
+
+        const className = firstMyChat.className;
+        // find all elements with the same class name
+        const allMyChat = Array.from(
+          document.querySelectorAll(`[class="${className}"]`)
+        );
+
+        return allMyChat;
+      }
     }
   ];
 
