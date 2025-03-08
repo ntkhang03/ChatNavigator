@@ -15,6 +15,7 @@ function createNavigationBar() {
 				<button id="nextChatBtn" class="chat-nav-button"><img src="${chrome.runtime.getURL("assets/images/down-arrow.svg")}" width=20 alt="Next" /></button>
 		</div>
 	`;
+  navContainer.style.display = "none";
 
   document.body.appendChild(navContainer);
 
@@ -60,7 +61,13 @@ function updateMessages() {
     // Case 3: (Gemini) Tin nhắn với id="user-query-content-0" id="user-query-content-1" ,...
     {
       find: () =>
-        Array.from(document.querySelectorAll('[id^="user-query-content-"]'))
+        Array.from(
+          document.querySelectorAll('[id^="user-query-content-"]')
+        ).map(
+          // element thứ 2
+          (div) =>
+            div.querySelector("[class*='user-query-bubble-with-background']")
+        )
     },
 
     // Case 4: (Grok) Tin nhắn với class="message-row items-end"
@@ -138,6 +145,27 @@ function updateMessages() {
 
         return allMyChat;
       }
+    },
+
+    // Case 11: (copilot.microsoft.com) id="xxxxxx-user-message"
+    {
+      find: () =>
+        Array.from(document.querySelectorAll('[id$="-user-message"]')).map(
+          (div) => div.childNodes[1].firstChild
+        )
+    },
+
+    // Case 12: (HuggingFace) data-message-type="user"
+    {
+      find: () =>
+        Array.from(document.querySelectorAll('[data-message-type="user"]')).map(
+          (div) => div.firstChild
+        )
+    },
+
+    // Case 13: (BlackBox AI) class="user-message"
+    {
+      find: () => Array.from(document.querySelectorAll(".user-message"))
     }
   ];
 
@@ -230,8 +258,29 @@ function navigate(direction) {
   }
 }
 
+async function checkEnabled() {
+  const currentDomain = window.location.hostname;
+  const result = await chrome.storage.local.get([currentDomain]);
+  const enabled = result[currentDomain];
+
+  if (enabled === false) {
+    return false;
+  } else {
+    return true;
+  }
+}
+
 // Khởi tạo
-function init() {
+async function init() {
+  if (!(await checkEnabled())) {
+    // set display none for navigation bar
+    const navContainer = document.getElementById("chat-navigator");
+    if (navContainer) {
+      navContainer.style.display = "none";
+    }
+    return;
+  }
+
   createNavigationBar();
   updateMessages();
 
@@ -248,3 +297,21 @@ if (document.readyState === "complete") {
 } else {
   window.addEventListener("load", init);
 }
+
+// listen message
+chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
+  console.log("message", message);
+  if (message.action === "toggleChatNavigator") {
+    if (message.enabled) {
+      init();
+    } else {
+      const navContainer = document.getElementById("chat-navigator");
+      if (navContainer) {
+        navContainer.style.display = "none";
+      }
+    }
+  }
+
+  sendResponse({ status: "ok" });
+  return true;
+});
