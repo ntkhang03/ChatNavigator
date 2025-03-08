@@ -1,57 +1,47 @@
-// popup.js
-document.addEventListener("DOMContentLoaded", function () {
-  const prevButton = document.getElementById("prevButton");
-  const nextButton = document.getElementById("nextButton");
-  const toggleHighlight = document.getElementById("toggleHighlight");
-  const messageCountElement = document.getElementById("messageCount");
+document.addEventListener("DOMContentLoaded", () => {
+  // popup.js
+  const toggleExtension = document.getElementById("toggleExtension");
+  const toggleExtensionContent = document.getElementById(
+    "toggleExtensionContent"
+  );
 
-  // Lấy thông tin từ content script
+  // style click cho toggleExtensionContent
+  toggleExtensionContent.addEventListener("click", function () {
+    toggleExtension.click();
+  });
+
   chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-    chrome.tabs.sendMessage(
-      tabs[0].id,
-      { action: "getStats" },
-      function (response) {
-        if (response && response.total) {
-          messageCountElement.textContent = `${response.current + 1}/${response.total}`;
-        }
+    const currentDomain = tabs[0].url;
+    const url = new URL(currentDomain);
+    const domain = url.hostname;
+
+    chrome.storage.local.get([domain], function (result) {
+      try {
+        toggleExtension.checked = result[domain] === false ? false : true;
+      } catch {}
+    });
+  });
+
+  // Lắng nghe sự kiện click vào checkbox
+  toggleExtension.addEventListener("click", function () {
+    const isChecked = toggleExtension.checked;
+    chrome.tabs.query(
+      { active: true, currentWindow: true },
+      async function (tabs) {
+        const currentDomain = tabs[0].url;
+        const url = new URL(currentDomain);
+        try {
+          chrome.storage.local.set({
+            [url.hostname]: isChecked === true
+          });
+
+          // send message to content script
+          await chrome.tabs.sendMessage(tabs[0].id, {
+            action: "toggleChatNavigator",
+            enabled: isChecked
+          });
+        } catch {}
       }
     );
-  });
-
-  // Điều hướng đến tin nhắn trước
-  prevButton.addEventListener("click", function () {
-    chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-      chrome.tabs.sendMessage(
-        tabs[0].id,
-        { action: "previousMessage" },
-        function (response) {
-          if (response && response.total) {
-            messageCountElement.textContent = `${response.current + 1}/${response.total}`;
-          }
-        }
-      );
-    });
-  });
-
-  // Điều hướng đến tin nhắn kế tiếp
-  nextButton.addEventListener("click", function () {
-    chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-      chrome.tabs.sendMessage(
-        tabs[0].id,
-        { action: "nextMessage" },
-        function (response) {
-          if (response && response.total) {
-            messageCountElement.textContent = `${response.current + 1}/${response.total}`;
-          }
-        }
-      );
-    });
-  });
-
-  // Bật/tắt highlight tất cả tin nhắn
-  toggleHighlight.addEventListener("click", function () {
-    chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-      chrome.tabs.sendMessage(tabs[0].id, { action: "toggleHighlight" });
-    });
   });
 });

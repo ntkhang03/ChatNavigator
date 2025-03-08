@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chat Navigator</title>
+
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f4;
+        color: #333;
+        padding: 10px;
+        width: 300px;
+      }
+
+      p {
+        font-size: 1rem;
+        line-height: 1.5;
+      }
+
+      .toggle-switch {
+        position: relative;
+        display: inline-block;
+        width: 44px;
+        height: 24px;
+      }
+
+      .toggle-switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+      }
+
+      .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        transition: 0.4s;
+        border-radius: 34px;
+      }
+
+      .slider:before {
+        position: absolute;
+        content: "";
+        height: 18px;
+        width: 18px;
+        left: 3px;
+        bottom: 3px;
+        background-color: white;
+        transition: 0.4s;
+        border-radius: 50%;
+      }
+
+      #toggleExtensionContent {
+        cursor: pointer;
+      }
+
+      input:checked + .slider {
+        background-color: #4caf50;
+      }
+
+      input:checked + .slider:before {
+        transform: translateX(20px);
+      }
+    </style>
+
+    <script src="popup.js"></script>
+  </head>
+  <body>
+    <h1 style="margin-top: 0px">Chat Navigator</h1>
+    <p>
+      If extension is not working, please <b>reload the page</b>, or check if
+      the website is
+      <a
+        href="https://github.com/ntkhang03/ChatNavigator/blob/master/content.js"
+        target="_blank"
+        >supported</a
+      >
+    </p>
+
+    <div style="display: flex">
+      <label class="toggle-switch">
+        <input type="checkbox" id="toggleExtension" />
+        <span class="slider"></span>
+      </label>
+
+      <p style="margin: 0 0 0 10px" id="toggleExtensionContent">
+        Enable/Disable on this page
+      </p>
+    </div>
+  </body>
+</html>
